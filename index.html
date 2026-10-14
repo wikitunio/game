@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHOA! — The Mind-Bending Quiz | The Daily Whoa</title>
+<meta name="description" content="Think you know the world? 10 questions. 15 seconds each. 3 lives. Every answer hides a mind-bending fact.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07070f; --bg2:#0c0c1a; --card:#101022;
+    --ink:#f2f2fa; --muted:#a7a7c4;
+    --violet:#8b5cf6; --cyan:#22d3ee; --pink:#f472b6;
+    --green:#34d399; --red:#f87171; --gold:#fbbf24;
+    --line:rgba(255,255,255,.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+  h1,h2,h3,.grotesk{font-family:'Space Grotesk',sans-serif}
+  .glow{position:fixed;border-radius:50%;filter:blur(120px);opacity:.35;pointer-events:none;z-index:0}
+  .glow.g1{width:520px;height:520px;background:var(--violet);top:-160px;left:-120px}
+  .glow.g2{width:460px;height:460px;background:var(--cyan);top:40%;right:-160px;opacity:.22}
+  .glow.g3{width:420px;height:420px;background:var(--pink);bottom:-140px;left:30%;opacity:.18}
+
+  .topbar{width:100%;max-width:720px;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;position:relative;z-index:1}
+  .brand{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem}
+  .brand span{background:linear-gradient(90deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .topbar a{color:var(--muted);font-size:.85rem}
+  .topbar a:hover{color:var(--ink)}
+
+  main{width:100%;max-width:720px;padding:12px 24px 60px;position:relative;z-index:1;flex:1;display:flex;flex-direction:column}
+
+  .screen{display:none;flex-direction:column;align-items:center;text-align:center;animation:fadeUp .35s ease}
+  .screen.active{display:flex}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .eyebrow{display:inline-block;font-size:.75rem;letter-spacing:.22em;color:var(--cyan);border:1px solid rgba(34,211,238,.35);border-radius:999px;padding:7px 16px;margin-bottom:24px}
+  h1.title{font-size:clamp(2.4rem,7vw,4rem);line-height:1.05;margin-bottom:16px}
+  h1.title .grad{background:linear-gradient(92deg,var(--violet) 10%,var(--pink) 50%,var(--cyan) 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{color:var(--muted);max-width:480px;margin-bottom:12px}
+  .rules{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:22px 0 30px}
+  .rule{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:.85rem;color:var(--muted)}
+  .rule b{color:var(--ink)}
+
+  .btn{display:inline-block;padding:14px 40px;border-radius:999px;font-weight:700;font-size:1rem;font-family:'Space Grotesk';background:linear-gradient(90deg,var(--violet),var(--cyan));color:#060612;border:none;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(139,92,246,.35)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);padding:12px 30px;font-size:.9rem}
+  .best{margin-top:18px;color:var(--muted);font-size:.9rem}
+  .best b{color:var(--gold)}
+
+  .hud{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:.9rem}
+  .hud .score{font-family:'Space Grotesk';font-weight:700;font-size:1.2rem}
+  .hud .lives{letter-spacing:.15em;font-size:1.05rem}
+  .hud .streak{color:var(--gold);font-weight:600;min-height:1.4em}
+  .qcount{color:var(--muted);font-size:.82rem;margin-bottom:8px;letter-spacing:.12em}
+
+  .timerbar{width:100%;height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:26px}
+  .timerfill{height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:99px;transition:width .1s linear}
+  .timerfill.low{background:linear-gradient(90deg,var(--red),var(--pink))}
+
+  .qcard{width:100%;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:34px 28px}
+  .cat{display:inline-block;font-size:.72rem;letter-spacing:.2em;font-weight:700;color:var(--violet);background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.35);border-radius:999px;padding:6px 14px;margin-bottom:18px}
+  .qtext{font-size:clamp(1.15rem,3.4vw,1.5rem);font-weight:600;line-height:1.4;margin-bottom:26px}
+  .opts{display:grid;gap:12px}
+  .opt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:15px 18px;color:var(--ink);font-size:.98rem;cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease;font-family:'Inter',sans-serif}
+  .opt:hover:not(:disabled){border-color:var(--violet);transform:translateX(4px)}
+  .opt:disabled{cursor:default;opacity:.85}
+  .opt .key{flex:none;width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:.85rem;color:var(--muted)}
+  .opt.correct{border-color:var(--green);background:rgba(52,211,153,.12)}
+  .opt.correct .key{background:var(--green);color:#060612}
+  .opt.wrong{border-color:var(--red);background:rgba(248,113,113,.1)}
+  .opt.wrong .key{background:var(--red);color:#060612}
+  .opt.dim{opacity:.45}
+
+  .fact{display:none;width:100%;margin-top:20px;background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.3);border-radius:14px;padding:18px 20px;text-align:left;font-size:.93rem;color:var(--muted);animation:fadeUp .3s ease}
+  .fact.show{display:block}
+  .fact b{color:var(--cyan);font-family:'Space Grotesk';letter-spacing:.08em;font-size:.78rem;display:block;margin-bottom:6px}
+  .nextrow{display:none;margin-top:22px}
+  .nextrow.show{display:block}
+
+  .rank{font-size:3.2rem;margin:8px 0 4px}
+  .finalscore{font-family:'Space Grotesk';font-size:3rem;font-weight:700;background:linear-gradient(92deg,var(--violet),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent;margin:6px 0}
+  .ranktitle{font-size:1.25rem;font-weight:600;margin-bottom:6px}
+  .stats{display:flex;gap:26px;margin:20px 0 30px;color:var(--muted);font-size:.9rem}
+  .stats b{display:block;font-family:'Space Grotesk';font-size:1.4rem;color:var(--ink)}
+  .newbest{display:none;color:var(--gold);font-weight:700;margin-bottom:4px;animation:pulse 1.2s infinite}
+  .newbest.show{display:block}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+  footer{padding:26px;color:var(--muted);font-size:.82rem;position:relative;z-index:1;text-align:center}
+  footer a{color:var(--cyan)}
+
+  @media(max-width:520px){
+    .qcard{padding:24px 18px}
+    .stats{gap:18px}
+  }
+</style>
+</head>
+<body>
+<div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+
+<div class="topbar">
+  <div class="brand">The Daily <span>Whoa</span> · Games</div>
+  <a href="https://tunio.me">← tunio.me</a>
+</div>
+
+<main>
+  <!-- START -->
+  <div class="screen active" id="screen-start">
+    <span class="eyebrow">THE DAILY WHOA PRESENTS</span>
+    <h1 class="title">WHOA!<br><span class="grad">The Mind-Bending Quiz</span></h1>
+    <p class="lede">Think you know the world? Every question hides a fact so strange it sounds fake — but isn't.</p>
+    <div class="rules">
+      <div class="rule"><b>10</b> questions</div>
+      <div class="rule"><b>15s</b> each</div>
+      <div class="rule"><b>❤❤❤</b> lives</div>
+      <div class="rule"><b>🔥</b> streak bonus</div>
+    </div>
+    <button class="btn" id="btn-start">Play</button>
+    <div class="best" id="start-best"></div>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="screen" id="screen-quiz">
+    <div class="hud">
+      <div class="score">🏆 <span id="hud-score">0</span></div>
+      <div class="streak" id="hud-streak"></div>
+      <div class="lives" id="hud-lives">❤❤❤</div>
+    </div>
+    <div class="qcount" id="qcount">QUESTION 1 / 10</div>
+    <div class="timerbar"><div class="timerfill" id="timerfill"></div></div>
+    <div class="qcard">
+      <span class="cat" id="qcat">SPACE</span>
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fact" id="fact"><b>WHOA, REALLY?</b><span id="facttext"></span></div>
+      <div class="nextrow" id="nextrow"><button class="btn" id="btn-next">Next →</button></div>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="screen" id="screen-over">
+    <span class="eyebrow">GAME OVER</span>
+    <div class="rank" id="rank-emoji">🧠</div>
+    <div class="ranktitle" id="rank-title">Mind Bender</div>
+    <div class="newbest" id="newbest">★ NEW BEST SCORE ★</div>
+    <div class="finalscore" id="final-score">0</div>
+    <div class="stats">
+      <div><b id="st-correct">0</b>correct</div>
+      <div><b id="st-beststreak">0</b>best streak</div>
+      <div><b id="st-answered">0</b>answered</div>
+    </div>
+    <button class="btn" id="btn-again">Play again</button>
+    <div style="margin-top:14px"><a class="btn ghost" href="https://tunio.me" style="text-decoration:none">← Back to tunio.me</a></div>
+  </div>
+</main>
+
+<footer>
+  Made with 🤯 by <a href="https://tunio.me">The Daily Whoa</a> · Every fact verified
+</footer>
+
+<script>
+/* Question bank — every fact verified against reputable sources (Oct 2026).
+   Saturn moon count deliberately stated without a number (it keeps changing).
+   Quasar water figure: Caltech/NASA JPL. Cleopatra/Oxford/mammoth dates: standard chronology. */
+const QUESTIONS = [
+  {cat:"SPACE", q:"A single day on Venus is LONGER than its entire year. What's going on?",
+   opts:["Venus spins backwards, once every 243 Earth days","Venus is the farthest planet from the Sun","Venus has no day/night cycle at all","Venus orbits the Sun twice per rotation"],
+   correct:0, fact:"Venus rotates once every 243 Earth days but orbits the Sun in just 225 — and it spins backwards compared to most planets."},
+  {cat:"SPACE", q:"Which planet holds the record for the most confirmed moons?",
+   opts:["Jupiter","Saturn","Uranus","Neptune"],
+   correct:1, fact:"Saturn keeps breaking its own record as better telescopes spot more tiny moons — it leads the solar system by a wide margin."},
+  {cat:"SPACE", q:"What happens to astronauts' footprints on the Moon?",
+   opts:["They fade within a decade","They'll last millions of years","Lunar wind wiped them away","They sank into the dust by 1980"],
+   correct:1, fact:"With no wind or water to disturb the dust, those bootprints will stay crisp for millions of years."},
+  {cat:"SPACE", q:"Astronomers found a water reservoir around quasar APM 08279+5255 equal to…",
+   opts:["14 Earth oceans","140 trillion Earth oceans","Half an Earth ocean","1,400 Earth oceans"],
+   correct:1, fact:"Confirmed by Caltech/NASA teams: the largest water reservoir ever found, 12 billion light-years away — 100,000 times the Sun's mass in water vapor."},
+  {cat:"SCIENCE", q:"Archaeologists tasted 3,000-year-old honey from Egyptian tombs. Result?",
+   opts:["Perfectly edible","Turned to stone","Highly toxic","It had evaporated"],
+   correct:0, fact:"Honey's low moisture and natural acidity make it nearly impossible for bacteria to grow — it essentially never spoils."},
+  {cat:"SCIENCE", q:"At water's 'triple point', what happens?",
+   opts:["It becomes invisible","It boils AND freezes at the same time","It turns into plasma","Nothing unusual"],
+   correct:1, fact:"At exactly 0.01°C and very low pressure, water exists as solid, liquid, and gas — all at once."},
+  {cat:"SCIENCE", q:"Botanically speaking, which of these IS a true berry?",
+   opts:["Strawberry","Banana","Raspberry","Apple"],
+   correct:1, fact:"Bananas develop from a single flower ovary, making them true berries. Strawberries are 'aggregate fruits' — the name is a lie."},
+  {cat:"SCIENCE", q:"In the summer heat, the Eiffel Tower…",
+   opts:["Grows about 15 cm taller","Shrinks slightly","Stays exactly the same","Leans two meters sideways"],
+   correct:0, fact:"Iron expands when heated. On a hot day the tower's metal framework stretches upward by around 15 centimeters."},
+  {cat:"SCIENCE", q:"Which of these is the OLDEST?",
+   opts:["Trees","Dinosaurs","Sharks","Flowers"],
+   correct:2, fact:"Sharks have cruised the oceans for about 450 million years — roughly 100 million years before the first trees."},
+  {cat:"SCIENCE", q:"How many hearts does an octopus have?",
+   opts:["One","Two","Three","Eight"],
+   correct:2, fact:"Two hearts pump blood to the gills, and a third pumps it to the rest of the body. Talk about big-hearted."},
+  {cat:"HUMAN BODY", q:"Quick experiment: while pinching your nose shut, you CANNOT…",
+   opts:["Blink","Hum","Swallow","Smile"],
+   correct:1, fact:"Humming needs air flowing through your nasal passages — pinch them shut and the hum dies instantly."},
+  {cat:"HUMAN BODY", q:"Why do humans get goosebumps?",
+   opts:["Extra blood flow to the skin","Leftover reflex from when we were furry","A vitamin deficiency","Cold-detecting sensors"],
+   correct:1, fact:"Tiny muscles yank each hair upright — a leftover from furry ancestors who puffed up to look bigger to predators."},
+  {cat:"HUMAN BODY", q:"How often does your stomach grow a brand-new lining?",
+   opts:["Once a year","Every few days","Never — it's for life","Every 10 years"],
+   correct:1, fact:"Stomach acid is strong enough to digest the stomach itself, so the lining regenerates every 3–4 days."},
+  {cat:"HUMAN BODY", q:"About how much power does your brain run on?",
+   opts:["20 watts — a dim light bulb","2,000 watts — a hair dryer","0.2 watts — a watch battery","200 watts — a gaming PC"],
+   correct:0, fact:"Your brain runs on roughly 20 watts — less than a dim light bulb — yet outperforms every supercomputer at efficiency."},
+  {cat:"PSYCHOLOGY", q:"The 'doorway effect' is the phenomenon where…",
+   opts:["You fear open doors","You forget why you entered a room","You get déjà vu in hallways","You dream about doors"],
+   correct:1, fact:"Passing through a doorway makes your brain file away the previous scene — and your intention goes with it."},
+  {cat:"PSYCHOLOGY", q:"The Zeigarnik effect says people remember…",
+   opts:["Faces better than names","Unfinished tasks better than finished ones","The first item on any list","Nothing after 24 hours"],
+   correct:1, fact:"Your brain keeps nagging you about incomplete tasks — it's why a catchy song stuck in your head fades once you hear the ending."},
+  {cat:"HISTORY", q:"Cleopatra lived closer in time to…",
+   opts:["The building of the pyramids","The Moon landing","The fall of Rome","The first Olympics"],
+   correct:1, fact:"About 2,000 years separate Cleopatra from Apollo 11 — but roughly 2,500 years separate her from the pyramids' construction."},
+  {cat:"HISTORY", q:"Which of these is the OLDEST?",
+   opts:["The Aztec Empire","Oxford University","The printing press","Machu Picchu"],
+   correct:1, fact:"Teaching at Oxford began in 1096 — the Aztec Empire wasn't founded until 1325, over 200 years later."},
+  {cat:"HISTORY", q:"When the pyramids of Giza were built, what still walked the Earth?",
+   opts:["Dinosaurs","Woolly mammoths","Velociraptors","Pterodactyls"],
+   correct:1, fact:"The last woolly mammoths survived on Wrangel Island until about 1700 BCE — centuries after the pyramids rose."},
+  {cat:"ANIMALS", q:"Tardigrades ('water bears') have survived…",
+   opts:["The vacuum of open space","A trip into a black hole","The surface of the Sun","A nuclear blast at ground zero"],
+   correct:0, fact:"In 2007, tardigrades spent 10 days exposed to the vacuum of space — and came back alive."},
+  {cat:"ANIMALS", q:"Where is a shrimp's heart located?",
+   opts:["In its tail","In its head","In its legs","It has no heart"],
+   correct:1, fact:"A shrimp's vital organs, heart included, sit in its cephalothorax — basically its head. Wear your heart… on your head?"},
+  {cat:"ANIMALS", q:"Studies show that cows…",
+   opts:["Can't see any color","Have best friends","Sleep only while standing","Have no long-term memory"],
+   correct:1, fact:"Cows form close bonds and show measurable stress when separated from their preferred herdmates."},
+  {cat:"WEIRD", q:"Hot water can sometimes freeze FASTER than cold water. This is called…",
+   opts:["The Leidenfrost effect","The Doppler effect","The Mpemba effect","The placebo effect"],
+   correct:2, fact:"Observed since Aristotle's time and still debated — evaporation, convection, and dissolved gases all seem to play a role."},
+  {cat:"WEIRD", q:"Which weighs more — a fluffy cumulus cloud or an elephant?",
+   opts:["The elephant, easily","The cloud","They're about equal","Neither — clouds are weightless"],
+   correct:1, fact:"A typical cumulus cloud weighs around 500,000 kg — about 100 elephants. It floats because that weight is spread over a colossal volume."},
+];
+
+const ROUND_LEN = 10, TIME_PER_Q = 15;
+let round = [], qi = 0, score = 0, lives = 3, streak = 0, bestStreak = 0, correctCount = 0;
+let timerId = null, timeLeft = 0, locked = false;
+let best = parseInt(localStorage.getItem('whoa_best') || '0', 10);
+
+const $ = id => document.getElementById(id);
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function updateBestLine(){
+  $('start-best').innerHTML = best > 0 ? 'Your best score: <b>' + best + '</b>' : 'No high score yet — set one!';
+}
+updateBestLine();
+
+$('btn-start').onclick = startGame;
+$('btn-again').onclick = startGame;
+$('btn-next').onclick = nextQuestion;
+document.addEventListener('keydown', e => {
+  if($('screen-quiz').classList.contains('active') && !locked){
+    const n = parseInt(e.key, 10);
+    if(n >= 1 && n <= 4) answer(n - 1);
+    if(e.key === 'Enter' && $('nextrow').classList.contains('show')) nextQuestion();
+  }
+});
+
+function startGame(){
+  round = shuffle([...QUESTIONS]).slice(0, ROUND_LEN);
+  qi = 0; score = 0; lives = 3; streak = 0; bestStreak = 0; correctCount = 0;
+  show('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  locked = false;
+  const Q = round[qi];
+  $('qcount').textContent = 'QUESTION ' + (qi+1) + ' / ' + ROUND_LEN;
+  $('qcat').textContent = Q.q.split(' ')[0].length ? Q.cat : Q.cat;
+  $('qtext').textContent = Q.q;
+  $('hud-score').textContent = score;
+  $('hud-lives').textContent = '❤'.repeat(lives) + '🖤'.repeat(3 - lives);
+  $('hud-streak').textContent = streak >= 2 ? '🔥 x' + streak : '';
+  $('fact').classList.remove('show');
+  $('nextrow').classList.remove('show');
+
+  const box = $('opts');
+  box.innerHTML = '';
+  Q.opts.forEach((text, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = '<span class="key">' + (i+1) + '</span><span></span>';
+    b.lastChild.textContent = text;
+    b.onclick = () => answer(i);
+    box.appendChild(b);
+  });
+
+  // timer
+  timeLeft = TIME_PER_Q;
+  const fill = $('timerfill');
+  fill.classList.remove('low');
+  clearInterval(timerId);
+  const t0 = Date.now();
+  timerId = setInterval(() => {
+    timeLeft = TIME_PER_Q - (Date.now() - t0) / 1000;
+    if(timeLeft <= 0){
+      clearInterval(timerId);
+      fill.style.width = '0%';
+      answer(-1); // timeout
+      return;
+    }
+    fill.style.width = (timeLeft / TIME_PER_Q * 100) + '%';
+    if(timeLeft <= 5) fill.classList.add('low');
+  }, 100);
+  fill.style.width = '100%';
+}
+
+function answer(i){
+  if(locked) return;
+  locked = true;
+  clearInterval(timerId);
+  const Q = round[qi];
+  const btns = $('opts').children;
+  const ok = (i === Q.correct);
+  [...btns].forEach(b => b.disabled = true);
+  btns[Q.correct].classList.add('correct');
+  if(ok){
+    correctCount++;
+    streak++;
+    bestStreak = Math.max(bestStreak, streak);
+    const pts = 100 + (streak - 1) * 25 + Math.round(timeLeft) * 2;
+    score += pts;
+  } else {
+    if(i >= 0) btns[i].classList.add('wrong');
+    [...btns].forEach((b, bi) => { if(bi !== Q.correct && bi !== i) b.classList.add('dim'); });
+    streak = 0;
+    lives--;
+  }
+  $('hud-score').textContent = score;
+  $('hud-lives').textContent = '❤'.repeat(Math.max(lives,0)) + '🖤'.repeat(3 - Math.max(lives,0));
+  $('hud-streak').textContent = streak >= 2 ? '🔥 x' + streak : '';
+  $('facttext').textContent = (i < 0 ? "Time's up! " : '') + Q.fact;
+  $('fact').classList.add('show');
+  $('btn-next').textContent = (qi + 1 >= ROUND_LEN || lives <= 0) ? 'See results →' : 'Next →';
+  $('nextrow').classList.add('show');
+}
+
+function nextQuestion(){
+  qi++;
+  if(qi >= ROUND_LEN || lives <= 0) return gameOver();
+  renderQuestion();
+}
+
+function rankFor(s){
+  if(s >= 1500) return ['🧠','Galaxy Brain'];
+  if(s >= 1000) return ['🤯','Mind Bender'];
+  if(s >= 600)  return ['⚡','Brain Tickler'];
+  if(s >= 300)  return ['🔍','Fact Finder'];
+  return ['🐣','Curious Cub'];
+}
+
+function gameOver(){
+  const [emoji, title] = rankFor(score);
+  $('rank-emoji').textContent = emoji;
+  $('rank-title').textContent = title;
+  $('final-score').textContent = score;
+  $('st-correct').textContent = correctCount + '/' + (qi + (lives <= 0 ? 0 : 0));
+  $('st-beststreak').textContent = '🔥 ' + bestStreak;
+  $('st-answered').textContent = Math.min(qi + 1, ROUND_LEN);
+  const isBest = score > best;
+  if(isBest){ best = score; localStorage.setItem('whoa_best', String(best)); }
+  $('newbest').classList.toggle('show', isBest && score > 0);
+  updateBestLine();
+  show('screen-over');
+}
+</script>
+</body>
+</html>
